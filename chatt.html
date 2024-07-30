@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Chat Bot</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="chat.js"></script>
+</head>
+<body>
+
+  <h1>Simple Chat Bot</h1>
+  <div id="chat-window" style="height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;"></div>
+  <input type="text" id="message-input" placeholder="Type your message...">
+  <button onclick="sendMessage()">Send</button>
+
+  <script>
+    const messageInput = document.getElementById('message-input');
+    const chatWindow = document.getElementById('chat-window');
+
+    function sendMessage() {
+      const message = messageInput.value.trim();
+      if (message !== '') {
+        addMessage('You: ' + message);
+        messageInput.value = '';
+        sendChatMessage(message);
+      }
+    }
+
+    function sendChatMessage(message) {
+      fetch('/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: 'message=' + encodeURIComponent(message)
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.text();
+      })
+      .then(data => addMessage('Bot: ' + data))
+      .catch(error => console.error('Error sending message:', error));
+    }
+
+    function addMessage(message) {
+      const messageElement = document.createElement('div');
+      messageElement.textContent = message;
+      chatWindow.appendChild(messageElement);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    // Allow sending messages by pressing Enter key
+    messageInput.addEventListener('keypress', function(event) {
+      if (event.key === 'Enter') {
+        sendMessage();
+      }
+    });
+  </script>
+</body>
+</html>
+
